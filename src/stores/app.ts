@@ -127,16 +127,15 @@ export const useAppStore = defineStore('app', () => {
 
   // Watch for state changes and persist to localStorage
   watch(
-    [optPeriod, stemPeriod, hasStemExtension, employmentSpans],
-    () => {
-      const state: AppState = {
-        optPeriod: optPeriod.value,
-        stemPeriod: stemPeriod.value,
-        hasStemExtension: hasStemExtension.value,
-        employmentSpans: employmentSpans.value,
-        calculationResult: calculationResult.value,
-      }
-      saveState(state)
+    () => ({
+      optPeriod: optPeriod.value,
+      stemPeriod: stemPeriod.value,
+      hasStemExtension: hasStemExtension.value,
+      employmentSpans: employmentSpans.value,
+      calculationResult: calculationResult.value,
+    }),
+    (state) => {
+      saveState(state as AppState)
     },
     { deep: true }
   )

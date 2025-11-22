@@ -1,4 +1,6 @@
+
 <script setup lang="ts">
+  import { computed } from 'vue'
 interface Props {
   variant?: 'primary' | 'secondary' | 'danger'
   size?: 'sm' | 'md' | 'lg'
@@ -30,7 +32,7 @@ const sizeClasses = {
   lg: 'px-6 py-3 text-lg',
 }
 
-const isDisabled = props.disabled || props.loading
+const isDisabled = computed(() => props.disabled || props.loading)
 </script>
 
 <template>

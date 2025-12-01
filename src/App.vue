@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { SpeedInsights } from '@vercel/speed-insights/vue'
 import { format } from 'date-fns'
 import { computed, onMounted, ref } from 'vue'
 import BaseButton from './components/base/BaseButton.vue'
@@ -125,6 +126,7 @@ async function exportDeadlines() {
 </script>
 
 <template>
+  <SpeedInsights />
   <div class="min-h-screen relative overflow-hidden bg-gradient-to-br from-sky-50 via-pink-50 to-amber-50">
     <div class="pointer-events-none absolute inset-0 opacity-70">
       <div class="absolute -top-24 -left-16 w-80 h-80 bg-pink-200/60 rounded-[40%] blur-3xl rotate-6"></div>
@@ -244,8 +246,8 @@ async function exportDeadlines() {
     <!-- Toast Notifications -->
     <div class="fixed bottom-4 left-4 space-y-2 z-50">
       <div v-for="toast in toasts" :key="toast.id" :class="[
-          'px-4 py-3 rounded shadow text-sm text-white',
-          toast.type === 'success' ? 'bg-green-600' : 'bg-red-600',
+  'px-4 py-3 rounded shadow text-sm text-white',
+  toast.type === 'success' ? 'bg-green-600' : 'bg-red-600',
 ]">
         {{ toast.message }}
       </div>

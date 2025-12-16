@@ -8,13 +8,14 @@ import InputForm from './components/InputForm.vue'
 import ResultSummary from './components/ResultSummary.vue'
 import Timeline from './components/Timeline.vue'
 import { useAppStore } from './stores/app'
-import { createUnemploymentICS, downloadIcsFile } from './utils/ics'
+import { createUnemploymentICS, createStemEvaluationICS, downloadIcsFile } from './utils/ics'
 
 const store = useAppStore()
 const showHelpModal = ref(false)
 type ToastType = 'success' | 'error'
 const copyStatus = ref<'idle' | 'copied' | 'error'>('idle')
 const exportStatus = ref<'idle' | 'success' | 'error'>('idle')
+const stemEvalStatus = ref<'idle' | 'success' | 'error'>('idle')
 const toasts = ref<{ id: number; message: string; type: ToastType }[]>([])
 let tempTimer: number | null = null
 
@@ -123,6 +124,29 @@ async function exportDeadlines() {
     }, 3000)
   }
 }
+
+async function exportStemEvaluations() {
+  if (!store.stemPeriod) return
+  if (tempTimer) {
+    clearTimeout(tempTimer)
+    tempTimer = null
+  }
+  try {
+    const ics = createStemEvaluationICS(store.stemPeriod.startDate)
+    if (!ics) throw new Error('Missing STEM OPT period')
+    downloadIcsFile(ics, 'stem-opt-evaluations.ics')
+    stemEvalStatus.value = 'success'
+    pushToast('STEM evaluation reminders downloaded', 'success')
+  } catch (error) {
+    console.error('Failed to export STEM evaluation ICS', error)
+    stemEvalStatus.value = 'error'
+    pushToast('Failed to export STEM evaluation reminders', 'error')
+  } finally {
+    tempTimer = window.setTimeout(() => {
+      stemEvalStatus.value = 'idle'
+    }, 3000)
+  }
+}
 </script>
 
 <template>
@@ -203,10 +227,14 @@ async function exportDeadlines() {
               <h2 class="text-xl font-semibold text-gray-900">
                 Unemployment Summary
               </h2>
-              <div class="flex items-center space-x-2">
+              <div class="flex items-center space-x-2 flex-wrap gap-2">
                 <BaseButton variant="secondary" size="sm" :disabled="!store.canCalculate || !store.optPeriod"
                   @click="exportDeadlines">
-                  📆 Add to Calendar
+                  📆 Deadlines
+                </BaseButton>
+                <BaseButton v-if="store.hasStemExtension" variant="secondary" size="sm"
+                  :disabled="!store.stemPeriod" @click="exportStemEvaluations">
+                  📋 STEM Evaluations
                 </BaseButton>
               </div>
             </div>
@@ -276,6 +304,9 @@ async function exportDeadlines() {
                 <dd>150-day unemployment limit</dd>
               </div>
             </dl>
+            <p class="text-slate-600 mt-3 pt-3 border-t border-slate-200">
+              <strong>STEM OPT Evaluations:</strong> Students on STEM OPT must submit Form I-983 evaluations at 6, 12, 18, and 24 months. Use the "STEM Evaluations" button to download calendar reminders.
+            </p>
           </article>
         </section>
 
@@ -288,7 +319,8 @@ async function exportDeadlines() {
               <li>Add STEM dates if you hold the extension.</li>
               <li>Log each employment period (employers, start/end dates).</li>
               <li>Review the summary to see days used vs. remaining.</li>
-              <li>Download ICS reminders or copy the summary for your DSO.</li>
+              <li>Download unemployment deadline reminders or copy the summary for your DSO.</li>
+              <li>If on STEM OPT, download evaluation reminders for 6, 12, 18, and 24-month deadlines.</li>
             </ol>
           </article>
         </section>

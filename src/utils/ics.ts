@@ -1,4 +1,4 @@
-import { addDays, format } from 'date-fns'
+import { addDays, addMonths, format } from 'date-fns'
 import type { EADPeriod } from '../types'
 import {
   OPT_UNEMPLOYMENT_LIMIT,
@@ -21,8 +21,13 @@ function generateUid(): string {
   return `opt-${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
-function buildEvent(summary: string, date: Date, description: string): string[] {
-  return [
+function buildEvent(
+  summary: string,
+  date: Date,
+  description: string,
+  reminders?: number[]
+): string[] {
+  const event = [
     'BEGIN:VEVENT',
     `UID:${generateUid()}`,
     `DTSTAMP:${formatICSDate(new Date())}`,
@@ -30,8 +35,21 @@ function buildEvent(summary: string, date: Date, description: string): string[] 
     `DTEND:${formatICSDate(addDays(date, 1))}`,
     `SUMMARY:${summary}`,
     `DESCRIPTION:${description}`,
-    'END:VEVENT',
   ]
+
+  // Add reminders/alarms if provided
+  if (reminders && reminders.length > 0) {
+    for (const reminderDays of reminders) {
+      event.push('BEGIN:VALARM')
+      event.push('ACTION:DISPLAY')
+      event.push(`DESCRIPTION:${summary}`)
+      event.push(`TRIGGER:-P${reminderDays}D`)
+      event.push('END:VALARM')
+    }
+  }
+
+  event.push('END:VEVENT')
+  return event
 }
 
 export function createUnemploymentICS(
@@ -70,6 +88,34 @@ export function createUnemploymentICS(
         'End of STEM EAD validity.'
       )
     )
+  }
+
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//OPT Tracker//EN',
+    ...events,
+    'END:VCALENDAR',
+  ].join('\r\n')
+}
+
+/**
+ * Creates ICS calendar file with STEM OPT evaluation reminders
+ * Generates events for 6, 12, 18, and 24-month evaluations with reminders
+ */
+export function createStemEvaluationICS(stemStartDate: Date): string | null {
+  if (!stemStartDate) return null
+
+  const events: string[] = []
+  const milestones = [6, 12, 18, 24]
+  const reminders = [30, 7, 1] // 30 days, 7 days, 1 day before
+
+  for (const months of milestones) {
+    const evaluationDate = addMonths(stemStartDate, months)
+    const summary = `STEM OPT ${months}-Month Evaluation Due`
+    const description = `This is your STEM OPT ${months}-month evaluation deadline. Please submit Form I-983 evaluation to your DSO before the deadline.`
+    
+    events.push(...buildEvent(summary, evaluationDate, description, reminders))
   }
 
   return [

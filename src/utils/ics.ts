@@ -122,8 +122,6 @@ export function createStemEvaluationICS(stemStartDate: Date): string | null {
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//OPT Tracker//EN',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
     ...events,
     'END:VCALENDAR',
   ].join('\r\n')

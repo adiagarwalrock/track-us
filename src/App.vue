@@ -232,7 +232,7 @@ async function exportStemEvaluations() {
                   @click="exportDeadlines">
                   📆 Deadlines
                 </BaseButton>
-                <BaseButton v-if="store.hasStemExtension && store.stemPeriod" variant="secondary" size="sm"
+                <BaseButton v-if="store.hasStemExtension" variant="secondary" size="sm"
                   :disabled="!store.stemPeriod" @click="exportStemEvaluations">
                   📋 STEM Evaluations
                 </BaseButton>
